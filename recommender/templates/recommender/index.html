@@ -1,0 +1,116 @@
+{% extends "recommender/base.html" %}
+
+{% block title %}منوی هوشمند کافه‌رستوران{% endblock %}
+
+{% block content %}
+<div class="main-card">
+    <div class="text-center mb-4">
+        <h1 class="brand-title">☕ منوی هوشمند</h1>
+        <p class="text-muted">
+            توضیح دهید چه چیزی می‌خواهید — هوش مصنوعی بهترین گزینه‌ها را از منوی ما پیشنهاد می‌دهد.
+        </p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="description" class="form-label fw-bold">
+                توضیحات شما:
+            </label>
+            <textarea
+                name="description"
+                id="description"
+                class="form-control menu-textarea"
+                rows="4"
+                placeholder="مثال: یک غذای سبک و گیاهی می‌خواهم، بودجه‌ام متوسط است..."
+                required>{{ user_request }}</textarea>
+        </div>
+
+        <div class="example-chips mb-4">
+            <small class="text-muted d-block mb-2">نمونه‌ها (کلیک کنید):</small>
+            <span class="chip" onclick="fillExample('یک غذای گیاهی و سبک می‌خواهم، زیر ۲۵۰ هزار تومان')">
+                🌱 غذای گیاهی سبک
+            </span>
+            <span class="chip" onclick="fillExample('یک غذای سنگین و پروتئین‌دار برای ناهار می‌خواهم')">
+                🥩 غذای سنگین
+            </span>
+            <span class="chip" onclick="fillExample('چیزی شیرین و گرم برای دسر می‌خواهم')">
+                🍰 دسر شیرین
+            </span>
+            <span class="chip" onclick="fillExample('یک نوشیدنی سرد و خنک پیشنهاد بده')">
+                🥤 نوشیدنی سرد
+            </span>
+            <span class="chip" onclick="fillExample('یک غذای ایتالیایی می‌خواهم')">
+                🍝 ایتالیایی
+            </span>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary-custom">
+                🔍 دریافت پیشنهاد
+            </button>
+        </div>
+    </form>
+
+    {% if error %}
+        <div class="alert alert-warning mt-4">
+            ⚠️ {{ error }}
+        </div>
+    {% endif %}
+
+    {% if recommendations %}
+        <hr class="my-5">
+        <h3 class="brand-title mb-4">✨ پیشنهادات برای شما:</h3>
+
+        {% for rec in recommendations %}
+            <div class="suggestion-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-1">{{ rec.item.name }}</h5>
+                        <small class="text-muted">
+                            {{ rec.item.get_category_display }}
+                        </small>
+                    </div>
+                    {% if rec.confidence %}
+                        <span class="confidence-badge">
+                            اطمینان: {{ rec.confidence|floatformat:0 }}%
+                        </span>
+                    {% endif %}
+                </div>
+
+                <p class="mt-3 mb-2">{{ rec.item.description }}</p>
+
+                {% if rec.reason %}
+                    <p class="mb-2">
+                        <strong>دلیل پیشنهاد:</strong>
+                        <span class="text-success">{{ rec.reason }}</span>
+                    </p>
+                {% endif %}
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="price-tag">
+                        💰 {{ rec.item.price }} تومان
+                    </span>
+                    <small class="text-muted">
+                        🏷️ {{ rec.item.tags }}
+                    </small>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% if note %}
+            <div class="alert alert-info mt-3">
+                💡 {{ note }}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function fillExample(text) {
+        document.getElementById('description').value = text;
+    }
+</script>
+{% endblock %}
